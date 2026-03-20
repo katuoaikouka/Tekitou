@@ -1,3 +1,5 @@
-{
-  "port": 8080
-}
+export const port = process.env.PORT || 8080;
+export const users = {}; 
+export const brokenSites = async () => {
+    return ["example.com", "broken-video-site.net"];
+};
