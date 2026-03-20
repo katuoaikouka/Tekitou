@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - SenninProxy</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f1f5f9;
+            --accent-color: #38bdf8;
+            --border-color: #334155;
+            --hover-accent: rgba(56, 189, 248, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', 'Inter', -apple-system, sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* 背景のアニメーション */
+        .bg-glow {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
+            z-index: -1;
+        }
+
+        .container {
+            text-align: center;
+            width: 90%;
+            max-width: 800px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            letter-spacing: -1px;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .search-hint {
+            opacity: 0.5;
+            font-size: 0.9rem;
+            margin-bottom: 3rem;
+        }
+
+        /* ブックマークタイル */
+        .bookmark-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 20px;
+            width: 100%;
+        }
+
+        .bookmark-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px 10px;
+            text-decoration: none;
+            color: var(--text-color);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .bookmark-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-color);
+            background: var(--hover-accent);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .icon {
+            width: 48px;
+            height: 48px;
+            background: #334155;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+        }
+
+        /* 時計 */
+        #clock {
+            font-size: 4rem;
+            font-weight: 200;
+            margin-bottom: 10px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+    </style>
+</head>
+<body>
+    <div class="bg-glow"></div>
+
+    <div class="container">
+        <div id="clock">00:00</div>
+        <h1>SenninProxy</h1>
+        <p class="search-hint">Enter a URL or search term above to start browsing</p>
+
+        <div class="bookmark-grid">
+            <a href="javascript:void(0)" onclick="openUrl('https://www.google.com')" class="bookmark-card">
+                <div class="icon">G</div>
+                <div class="label">Google</div>
+            </a>
+            <a href="javascript:void(0)" onclick="openUrl('https://www.youtube.com')" class="bookmark-card">
+                <div class="icon">Y</div>
+                <div class="label">YouTube</div>
+            </a>
+            <a href="javascript:void(0)" onclick="openUrl('https://github.com')" class="bookmark-card">
+                <div class="icon">Git</div>
+                <div class="label">GitHub</div>
+            </a>
+            <a href="javascript:void(0)" onclick="openUrl('https://twitter.com')" class="bookmark-card">
+                <div class="icon">X</div>
+                <div class="label">Twitter</div>
+            </a>
+            <a href="javascript:void(0)" onclick="openUrl('https://discord.com')" class="bookmark-card">
+                <div class="icon">D</div>
+                <div class="label">Discord</div>
+            </a>
+            <a href="javascript:void(0)" onclick="openUrl('https://www.wikipedia.org')" class="bookmark-card">
+                <div class="icon">W</div>
+                <div class="label">Wikipedia</div>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // 親ウィンドウ（ブラウザ本体）のURL入力欄と連動させる関数
+        function openUrl(url) {
+            const addressBar = window.parent.document.getElementById('iurl');
+            if (addressBar) {
+                addressBar.value = url;
+                // 親ウィンドウのlaunch関数を呼び出す
+                window.parent.launch();
+            }
+        }
+
+        // 時計の更新
+        function updateClock() {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('clock').textContent = `${h}:${m}`;
+        }
+        
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+</body>
+</html>
