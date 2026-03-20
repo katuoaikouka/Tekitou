@@ -14,110 +14,156 @@
             --text-color: #f1f5f9;
             --accent-color: #38bdf8; /* 明るい青 */
             --border-color: #334155;
+            --hover-bg: rgba(255, 255, 255, 0.1);
         }
 
-        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Inter', -apple-system, sans-serif; overflow: hidden; background: var(--bg-color); color: var(--text-color); }
+        body, html { 
+            margin: 0; 
+            padding: 0; 
+            height: 100%; 
+            font-family: 'Segoe UI', 'Inter', -apple-system, sans-serif; 
+            overflow: hidden; 
+            background: var(--bg-color); 
+            color: var(--text-color); 
+        }
 
         /* タブバー */
         #tab-bar {
             display: flex;
             align-items: flex-end;
-            padding: 8px 10px 0;
+            padding: 6px 10px 0;
             background: var(--bg-color);
-            gap: 4px;
-            height: 40px;
+            gap: 2px;
+            height: 42px;
             user-select: none;
+        }
+
+        #tabs-list {
+            display: flex;
+            gap: 4px;
+            align-items: flex-end;
         }
 
         .tab {
             background: var(--tab-inactive);
-            padding: 8px 15px;
-            border-radius: 6px 6px 0 0;
+            padding: 8px 16px;
+            border-radius: 10px 10px 0 0;
             font-size: 12px;
-            min-width: 140px;
-            max-width: 220px;
+            min-width: 120px;
+            max-width: 200px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
-            border: 1px solid var(--border-color);
-            border-bottom: none;
+            border: 1px solid transparent;
+            color: rgba(241, 245, 249, 0.7);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            animation: tabOpen 0.3s ease-out;
+        }
+
+        @keyframes tabOpen {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tab:hover {
+            background: var(--hover-bg);
             color: var(--text-color);
-            transition: background 0.2s;
         }
 
         .tab.active { 
             background: var(--tab-active); 
-            border-bottom: 2px solid var(--accent-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--tab-active);
+            z-index: 2;
         }
         
         .tab-title {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            margin-right: 8px;
+            margin-right: 12px;
         }
 
         .close-tab { 
-            font-family: monospace;
+            font-family: Arial, sans-serif;
             font-size: 14px; 
-            opacity: 0.4; 
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
         }
-        .close-tab:hover { opacity: 1; color: #f87171; }
+        .close-tab:hover { background: #f87171; color: white; }
 
         .add-tab { 
             background: none; 
-            border: 1px solid var(--border-color); 
+            border: none; 
             color: white; 
-            font-size: 18px; 
+            font-size: 20px; 
             cursor: pointer; 
-            padding: 0 10px;
-            border-radius: 4px;
-            margin-bottom: 5px;
-            margin-left: 5px;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin-bottom: 6px;
+            margin-left: 4px;
+            transition: background 0.2s, transform 0.2s;
         }
-        .add-tab:hover { background: var(--toolbar-color); }
+        .add-tab:hover { background: var(--hover-bg); transform: rotate(90deg); }
 
         /* ツールバー */
         #toolbar {
-            height: 48px;
+            height: 44px;
             background: var(--toolbar-color);
             display: flex;
             align-items: center;
             padding: 0 12px;
-            gap: 15px;
+            gap: 12px;
             border-bottom: 1px solid var(--border-color);
+            z-index: 3;
+            position: relative;
         }
 
-        .nav-icons { display: flex; gap: 4px; }
+        .nav-icons { display: flex; gap: 2px; }
         .nav-btn {
             background: none; 
             border: none; 
             color: white; 
-            font-size: 14px; 
-            font-weight: bold;
+            font-size: 16px; 
             cursor: pointer; 
-            border-radius: 4px;
-            width: 34px; 
-            height: 34px; 
+            border-radius: 50%;
+            width: 32px; 
+            height: 32px; 
             display: flex; 
             align-items: center; 
             justify-content: center;
-            transition: background 0.2s;
+            transition: background 0.2s, transform 0.1s;
         }
-        .nav-btn:hover { background: rgba(255,255,255,0.08); }
+        .nav-btn:hover { background: var(--hover-bg); }
+        .nav-btn:active { transform: scale(0.9); }
 
         #address-bar-container {
             flex-grow: 1;
             background: #0f172a;
-            border-radius: 4px;
+            border-radius: 20px;
             display: flex;
             align-items: center;
-            padding: 0 12px;
+            padding: 0 16px;
             height: 32px;
             border: 1px solid var(--border-color);
+            transition: box-shadow 0.2s, border-color 0.2s;
         }
-        #address-bar-container:focus-within { border-color: var(--accent-color); }
+        #address-bar-container:focus-within { 
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+        }
 
         #iurl {
             width: 100%;
@@ -126,11 +172,22 @@
             color: white;
             outline: none;
             font-size: 13px;
+            letter-spacing: 0.3px;
         }
+
+        /* お気に入りボタン */
+        #fav-btn {
+            color: #94a3b8;
+            cursor: pointer;
+            margin-left: 8px;
+            transition: color 0.2s;
+            font-size: 18px;
+        }
+        #fav-btn.active { color: #fbbf24; }
 
         /* コンテンツ表示エリア */
         #view-container {
-            height: calc(100% - 88px);
+            height: calc(100% - 86px);
             background: #ffffff;
             position: relative;
         }
@@ -140,60 +197,80 @@
             height: 100%; 
             border: none;
             display: none;
+            animation: fadeIn 0.3s ease-in-out;
         }
         .browser-view.active { display: block; }
 
-        /* ホーム画面 */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* ホーム画面 (home.htmlを埋め込むiframe) */
         #home-screen {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             background: #0f172a;
             display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
             z-index: 10;
+            border: none;
         }
 
-        .logo { 
-            font-size: 42px; 
-            font-weight: 800; 
-            letter-spacing: -1px;
-            color: var(--accent-color); 
-            margin-bottom: 16px; 
+        /* お気に入りバー */
+        #bookmarks-bar {
+            height: 30px;
+            background: var(--toolbar-color);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            gap: 10px;
+            overflow-x: auto;
+            scrollbar-width: none;
         }
-        .description { opacity: 0.5; font-size: 14px; }
+        .bookmark-item {
+            font-size: 11px;
+            color: var(--text-color);
+            cursor: pointer;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: var(--hover-bg);
+            white-space: nowrap;
+            transition: background 0.2s;
+        }
+        .bookmark-item:hover { background: rgba(255,255,255,0.2); }
     </style>
 </head>
 <body>
 
 <div id="tab-bar">
-    <div id="tabs-list" style="display: flex; gap: 4px;"></div>
-    <button class="add-tab" onclick="createNewTab()">+</button>
+    <div id="tabs-list"></div>
+    <button class="add-tab" onclick="createNewTab()" title="New Tab">+</button>
 </div>
 
 <div id="toolbar">
     <div class="nav-icons">
-        <button class="nav-btn" title="Back" onclick="getCurrentFrame()?.contentWindow.history.back()">PREV</button>
-        <button class="nav-btn" title="Forward" onclick="getCurrentFrame()?.contentWindow.history.forward()">NEXT</button>
-        <button class="nav-btn" title="Reload" onclick="getCurrentFrame()?.contentWindow.location.reload()">REF</button>
+        <button class="nav-btn" title="Back" onclick="getCurrentFrame()?.contentWindow.history.back()">←</button>
+        <button class="nav-btn" title="Forward" onclick="getCurrentFrame()?.contentWindow.history.forward()">→</button>
+        <button class="nav-btn" title="Reload" onclick="getCurrentFrame()?.contentWindow.location.reload()">⟳</button>
     </div>
     <div id="address-bar-container">
-        <input type="text" id="iurl" placeholder="Search or enter URL" autocomplete="off">
+        <input type="text" id="iurl" placeholder="Search with Google or enter URL" autocomplete="off">
+        <span id="fav-btn" onclick="toggleBookmark()" title="Bookmark this page">★</span>
     </div>
-    <button class="nav-btn" onclick="goHome()">HOME</button>
+    <button class="nav-btn" onclick="goHome()" title="Home">⌂</button>
 </div>
 
+<div id="bookmarks-bar"></div>
+
 <div id="view-container">
-    <div id="home-screen">
-        <div class="logo">SenninProxy</div>
-        <p class="description">Secure Web Gateway</p>
-    </div>
+    <iframe id="home-screen" src="home.html"></iframe>
 </div>
 
 <script>
     let tabs = [];
     let activeTabId = null;
+    let bookmarks = JSON.parse(localStorage.getItem('sennin-bookmarks') || '[]');
 
     const $ = e => document.getElementById(e);
 
@@ -207,7 +284,7 @@
         tabEl.id = 'btn-' + id;
         tabEl.innerHTML = `
             <span class="tab-title">New Tab</span>
-            <span class="close-tab" onclick="closeTab(event, '${id}')">X</span>
+            <span class="close-tab" onclick="closeTab(event, '${id}')">×</span>
         `;
         tabEl.onclick = () => switchTab(id);
         $('tabs-list').appendChild(tabEl);
@@ -232,8 +309,9 @@
         if (view) view.classList.add('active');
 
         const currentTab = tabs.find(t => t.id === id);
-        $('home-screen').style.display = currentTab.url ? 'none' : 'flex';
+        $('home-screen').style.display = currentTab.url ? 'none' : 'block';
         $('iurl').value = currentTab.url || '';
+        updateFavIcon();
     }
 
     function closeTab(e, id) {
@@ -251,10 +329,10 @@
         }
     }
 
-    function launch() {
+    function launch(targetUrl = null) {
         if (!activeTabId) createNewTab();
         
-        let url = $('iurl').value.trim();
+        let url = targetUrl || $('iurl').value.trim();
         if (!url) return;
 
         if (!url.includes('.') && !url.includes('://')) {
@@ -279,6 +357,7 @@
         } catch(e) {
             $('btn-' + activeTabId).querySelector('.tab-title').innerText = url;
         }
+        updateFavIcon();
     }
 
     function getCurrentFrame() {
@@ -292,13 +371,61 @@
             $('view-' + activeTabId).src = '';
             $('btn-' + activeTabId).querySelector('.tab-title').innerText = 'New Tab';
         }
-        $('home-screen').style.display = 'flex';
+        $('home-screen').style.display = 'block';
         $('iurl').value = '';
+        updateFavIcon();
+    }
+
+    /* お気に入り機能 */
+    function toggleBookmark() {
+        const currentTab = tabs.find(t => t.id === activeTabId);
+        if (!currentTab || !currentTab.url) return;
+
+        const index = bookmarks.indexOf(currentTab.url);
+        if (index > -1) {
+            bookmarks.splice(index, 1);
+        } else {
+            bookmarks.push(currentTab.url);
+        }
+        localStorage.setItem('sennin-bookmarks', JSON.stringify(bookmarks));
+        renderBookmarks();
+        updateFavIcon();
+    }
+
+    function renderBookmarks() {
+        const bar = $('bookmarks-bar');
+        bar.innerHTML = '';
+        bookmarks.forEach(url => {
+            const item = document.createElement('div');
+            item.className = 'bookmark-item';
+            try {
+                item.innerText = new URL(url).hostname;
+            } catch {
+                item.innerText = url;
+            }
+            item.onclick = () => {
+                $('iurl').value = url;
+                launch(url);
+            };
+            bar.appendChild(item);
+        });
+    }
+
+    function updateFavIcon() {
+        const currentTab = tabs.find(t => t.id === activeTabId);
+        if (currentTab && currentTab.url && bookmarks.includes(currentTab.url)) {
+            $('fav-btn').classList.add('active');
+        } else {
+            $('fav-btn').classList.remove('active');
+        }
     }
 
     $('iurl').onkeypress = (e) => { if (e.key === 'Enter') launch(); };
 
-    window.onload = createNewTab;
+    window.onload = () => {
+        createNewTab();
+        renderBookmarks();
+    };
 </script>
 </body>
 </html>
