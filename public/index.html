@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SenninProxy</title>
+    <script async src="https://arc.io/widget.min.js#YOUR_ARC_ID"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a; /* 濃い紺色 */
+            --toolbar-color: #1e293b;
+            --tab-active: #1e293b;
+            --tab-inactive: #0f172a;
+            --text-color: #f1f5f9;
+            --accent-color: #38bdf8; /* 明るい青 */
+            --border-color: #334155;
+        }
+
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Inter', -apple-system, sans-serif; overflow: hidden; background: var(--bg-color); color: var(--text-color); }
+
+        /* タブバー */
+        #tab-bar {
+            display: flex;
+            align-items: flex-end;
+            padding: 8px 10px 0;
+            background: var(--bg-color);
+            gap: 4px;
+            height: 40px;
+            user-select: none;
+        }
+
+        .tab {
+            background: var(--tab-inactive);
+            padding: 8px 15px;
+            border-radius: 6px 6px 0 0;
+            font-size: 12px;
+            min-width: 140px;
+            max-width: 220px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+            color: var(--text-color);
+            transition: background 0.2s;
+        }
+
+        .tab.active { 
+            background: var(--tab-active); 
+            border-bottom: 2px solid var(--accent-color);
+        }
+        
+        .tab-title {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-right: 8px;
+        }
+
+        .close-tab { 
+            font-family: monospace;
+            font-size: 14px; 
+            opacity: 0.4; 
+        }
+        .close-tab:hover { opacity: 1; color: #f87171; }
+
+        .add-tab { 
+            background: none; 
+            border: 1px solid var(--border-color); 
+            color: white; 
+            font-size: 18px; 
+            cursor: pointer; 
+            padding: 0 10px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            margin-left: 5px;
+        }
+        .add-tab:hover { background: var(--toolbar-color); }
+
+        /* ツールバー */
+        #toolbar {
+            height: 48px;
+            background: var(--toolbar-color);
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            gap: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-icons { display: flex; gap: 4px; }
+        .nav-btn {
+            background: none; 
+            border: none; 
+            color: white; 
+            font-size: 14px; 
+            font-weight: bold;
+            cursor: pointer; 
+            border-radius: 4px;
+            width: 34px; 
+            height: 34px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .nav-btn:hover { background: rgba(255,255,255,0.08); }
+
+        #address-bar-container {
+            flex-grow: 1;
+            background: #0f172a;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            height: 32px;
+            border: 1px solid var(--border-color);
+        }
+        #address-bar-container:focus-within { border-color: var(--accent-color); }
+
+        #iurl {
+            width: 100%;
+            background: none;
+            border: none;
+            color: white;
+            outline: none;
+            font-size: 13px;
+        }
+
+        /* コンテンツ表示エリア */
+        #view-container {
+            height: calc(100% - 88px);
+            background: #ffffff;
+            position: relative;
+        }
+
+        .browser-view {
+            width: 100%; 
+            height: 100%; 
+            border: none;
+            display: none;
+        }
+        .browser-view.active { display: block; }
+
+        /* ホーム画面 */
+        #home-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #0f172a;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .logo { 
+            font-size: 42px; 
+            font-weight: 800; 
+            letter-spacing: -1px;
+            color: var(--accent-color); 
+            margin-bottom: 16px; 
+        }
+        .description { opacity: 0.5; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div id="tab-bar">
+    <div id="tabs-list" style="display: flex; gap: 4px;"></div>
+    <button class="add-tab" onclick="createNewTab()">+</button>
+</div>
+
+<div id="toolbar">
+    <div class="nav-icons">
+        <button class="nav-btn" title="Back" onclick="getCurrentFrame()?.contentWindow.history.back()">PREV</button>
+        <button class="nav-btn" title="Forward" onclick="getCurrentFrame()?.contentWindow.history.forward()">NEXT</button>
+        <button class="nav-btn" title="Reload" onclick="getCurrentFrame()?.contentWindow.location.reload()">REF</button>
+    </div>
+    <div id="address-bar-container">
+        <input type="text" id="iurl" placeholder="Search or enter URL" autocomplete="off">
+    </div>
+    <button class="nav-btn" onclick="goHome()">HOME</button>
+</div>
+
+<div id="view-container">
+    <div id="home-screen">
+        <div class="logo">SenninProxy</div>
+        <p class="description">Secure Web Gateway</p>
+    </div>
+</div>
+
+<script>
+    let tabs = [];
+    let activeTabId = null;
+
+    const $ = e => document.getElementById(e);
+
+    function createNewTab() {
+        const id = 'tab-' + Date.now();
+        const tabObj = { id, url: '' };
+        tabs.push(tabObj);
+
+        const tabEl = document.createElement('div');
+        tabEl.className = 'tab';
+        tabEl.id = 'btn-' + id;
+        tabEl.innerHTML = `
+            <span class="tab-title">New Tab</span>
+            <span class="close-tab" onclick="closeTab(event, '${id}')">X</span>
+        `;
+        tabEl.onclick = () => switchTab(id);
+        $('tabs-list').appendChild(tabEl);
+
+        const iframe = document.createElement('iframe');
+        iframe.className = 'browser-view';
+        iframe.id = 'view-' + id;
+        $('view-container').appendChild(iframe);
+
+        switchTab(id);
+    }
+
+    function switchTab(id) {
+        activeTabId = id;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.browser-view').forEach(v => v.classList.remove('active'));
+
+        const btn = $('btn-' + id);
+        if (btn) btn.classList.add('active');
+        
+        const view = $('view-' + id);
+        if (view) view.classList.add('active');
+
+        const currentTab = tabs.find(t => t.id === id);
+        $('home-screen').style.display = currentTab.url ? 'none' : 'flex';
+        $('iurl').value = currentTab.url || '';
+    }
+
+    function closeTab(e, id) {
+        e.stopPropagation();
+        tabs = tabs.filter(t => t.id !== id);
+        const btn = $('btn-' + id);
+        const view = $('view-' + id);
+        if (btn) btn.remove();
+        if (view) view.remove();
+
+        if (activeTabId === id && tabs.length > 0) {
+            switchTab(tabs[tabs.length - 1].id);
+        } else if (tabs.length === 0) {
+            createNewTab();
+        }
+    }
+
+    function launch() {
+        if (!activeTabId) createNewTab();
+        
+        let url = $('iurl').value.trim();
+        if (!url) return;
+
+        if (!url.includes('.') && !url.includes('://')) {
+            url = 'https://www.google.com/search?q=' + encodeURIComponent(url);
+        } else if (!url.startsWith('http')) {
+            url = 'https://' + url;
+        }
+
+        $('home-screen').style.display = 'none';
+        const origin = btoa(url);
+        const proxyUrl = window.location.origin + "/prefix/" + origin;
+        
+        const frame = $('view-' + activeTabId);
+        frame.src = proxyUrl;
+        
+        const tab = tabs.find(t => t.id === activeTabId);
+        tab.url = url;
+        
+        try {
+            const domain = new URL(url).hostname;
+            $('btn-' + activeTabId).querySelector('.tab-title').innerText = domain;
+        } catch(e) {
+            $('btn-' + activeTabId).querySelector('.tab-title').innerText = url;
+        }
+    }
+
+    function getCurrentFrame() {
+        return activeTabId ? $('view-' + activeTabId) : null;
+    }
+
+    function goHome() {
+        if (activeTabId) {
+            const tab = tabs.find(t => t.id === activeTabId);
+            tab.url = '';
+            $('view-' + activeTabId).src = '';
+            $('btn-' + activeTabId).querySelector('.tab-title').innerText = 'New Tab';
+        }
+        $('home-screen').style.display = 'flex';
+        $('iurl').value = '';
+    }
+
+    $('iurl').onkeypress = (e) => { if (e.key === 'Enter') launch(); };
+
+    window.onload = createNewTab;
+</script>
+</body>
+</html>
