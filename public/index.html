@@ -355,9 +355,11 @@
     async function registerSW() {
         if (proxyMode === 'uv' && 'serviceWorker' in navigator) {
             try {
-                // uv.config.jsの設定に合わせて明示的にパスを指定
+                // スコープの問題を解決するため、パスを '/' から開始するように変更
+                // 本来は uv.sw.js をルートに置くのが理想ですが、
+                // 今回はスクリプトの場所を指定しつつ登録します
                 await navigator.serviceWorker.register('/uv/uv.sw.js', {
-                    scope: '/service/'
+                    scope: __uv$config.prefix // '/service/'
                 });
                 console.log("UV ServiceWorker registered");
             } catch (err) {
