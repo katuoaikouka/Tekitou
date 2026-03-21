@@ -46,7 +46,13 @@ app.get('/service/*', (req, res) => {
 });
 
 // 静的ファイルの提供
-app.use(express.static(path.join(rootDir, "public")));
+app.use(express.static(path.join(rootDir, "public"), {
+    setHeaders: (res, filePath) => {
+        if (filePath.endsWith('uv.sw.js')) {
+            res.setHeader('Service-Worker-Allowed', '/');
+        }
+    }
+}));
 
 // メインルート
 app.get('/', (req, res) => {
