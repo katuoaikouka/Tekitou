@@ -351,19 +351,6 @@
 
     const $ = e => document.getElementById(e);
 
-    /* UV Proxy Encode Logic */
-    class crypts {
-        static encode(str) {
-            if (!str) return str;
-            return encodeURIComponent(
-                String(str)
-                    .split("")
-                    .map((c, i) => i % 2 ? String.fromCharCode(c.charCodeAt(0) ^ 2) : c)
-                    .join("")
-            );
-        }
-    }
-
     /* UV Service Worker Registration */
     async function registerSW() {
         if (proxyMode === 'uv' && 'serviceWorker' in navigator) {
@@ -462,8 +449,8 @@
             const origin = btoa(url);
             proxyUrl = window.location.origin + "/prefix/" + origin;
         } else {
-            // uv.config.js の prefix: '/service/' を使用
-            proxyUrl = window.location.origin + '/service/' + crypts.encode(url);
+            // uv.config.js の prefix: '/service/' と encodeUrl を使用
+            proxyUrl = window.location.origin + '/service/' + __uv$config.encodeUrl(url);
         }
         
         const frame = $('view-' + activeTabId);
