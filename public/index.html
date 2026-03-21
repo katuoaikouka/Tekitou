@@ -294,6 +294,8 @@
         .setting-option:hover { background: rgba(255,255,255,0.15); }
         .setting-option.active { border: 1px solid var(--accent-color); background: rgba(56, 189, 248, 0.1); }
     </style>
+    <script src="/uv/uv.bundle.js"></script>
+    <script src="/uv/uv.config.js"></script>
 </head>
 <body>
 
@@ -340,30 +342,42 @@
 </div>
 
 <script>
+    "use strict";
+
     let tabs = [];
     let activeTabId = null;
     let bookmarks = JSON.parse(localStorage.getItem('sennin-bookmarks') || '[]');
-    let proxyMode = localStorage.getItem('proxy-mode') || 'alloy'; // 初期設定
+    let proxyMode = localStorage.getItem('proxy-mode') || 'alloy'; 
 
     const $ = e => document.getElementById(e);
 
-    // UV Proxy用のスクリプト読み込み
-    function loadUV() {
-        if (document.getElementById('uv-bundle')) return;
-        const scripts = [
-            { id: 'uv-bundle', src: '/uv/uv.bundle.js' },
-            { id: 'uv-config', src: '/uv/uv.config.js' },
-            { id: 'uv-main', src: '/assets/js/main.js' }
-        ];
-        scripts.forEach(s => {
-            const sc = document.createElement('script');
-            sc.id = s.id;
-            sc.src = s.src;
-            document.head.appendChild(sc);
-        });
+    /* UV Proxy Encode Logic */
+    class crypts {
+        static encode(str) {
+            if (!str) return str;
+            return encodeURIComponent(
+                String(str)
+                    .split("")
+                    .map((c, i) => i % 2 ? String.fromCharCode(c.charCodeAt(0) ^ 2) : c)
+                    .join("")
+            );
+        }
     }
 
-    if (proxyMode === 'uv') loadUV();
+    /* UV Service Worker Registration */
+    async function registerSW() {
+        if (proxyMode === 'uv' && 'serviceWorker' in navigator) {
+            const swConfig = window.__uv$config || {};
+            try {
+                await navigator.serviceWorker.register(swConfig.sw || '/uv/sw.js', {
+                    scope: swConfig.prefix || '/service/'
+                });
+                console.log("UV ServiceWorker registered");
+            } catch (err) {
+                console.error("SW registration failed:", err);
+            }
+        }
+    }
 
     function createNewTab() {
         const id = 'tab-' + Date.now();
@@ -383,12 +397,9 @@
         const iframe = document.createElement('iframe');
         iframe.className = 'browser-view';
         iframe.id = 'view-' + id;
-        
-        // 読み込み開始・終了のイベント監視
         iframe.onload = () => finishLoading();
         
         $('view-container').appendChild(iframe);
-
         switchTab(id);
     }
 
@@ -431,7 +442,6 @@
         let url = targetUrl || $('iurl').value.trim();
         if (!url) return;
 
-        // 設定画面のトリガー
         if (url === '/setting') {
             openSetting();
             return;
@@ -452,9 +462,8 @@
             const origin = btoa(url);
             proxyUrl = window.location.origin + "/prefix/" + origin;
         } else {
-            // サーバー側の bareServer = createBareServer('/bare/') に合わせ、
-            // UVのServiceWorker設定（通常 /uv/service/）を介して通信します
-            proxyUrl = window.location.origin + "/uv/service/" + __uv$config.encodeUrl(url);
+            const swConfig = window.__uv$config || { prefix: '/service/' };
+            proxyUrl = window.location.origin + swConfig.prefix + crypts.encode(url);
         }
         
         const frame = $('view-' + activeTabId);
@@ -472,7 +481,6 @@
         updateFavIcon();
     }
 
-    /* アニメーション制御 */
     function startLoading() {
         $('loading-bar-container').style.display = 'block';
         $('loading-bar').style.width = '0%';
@@ -504,7 +512,6 @@
         updateFavIcon();
     }
 
-    /* 設定画面の関数 */
     function openSetting() {
         $('home-screen').style.display = 'none';
         $('setting-screen').style.display = 'flex';
@@ -521,7 +528,7 @@
     function setProxyMode(mode) {
         proxyMode = mode;
         localStorage.setItem('proxy-mode', mode);
-        if (mode === 'uv') loadUV();
+        if (mode === 'uv') registerSW();
         updateSettingUI();
     }
 
@@ -539,7 +546,6 @@
         }
     }
 
-    /* お気に入り機能 */
     function toggleBookmark() {
         const currentTab = tabs.find(t => t.id === activeTabId);
         if (!currentTab || !currentTab.url) return;
@@ -588,6 +594,7 @@
     window.onload = () => {
         createNewTab();
         renderBookmarks();
+        registerSW();
     };
 </script>
 </body>
