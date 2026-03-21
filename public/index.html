@@ -355,11 +355,10 @@
     async function registerSW() {
         if (proxyMode === 'uv' && 'serviceWorker' in navigator) {
             try {
-                // スコープの問題を解決するため、パスを '/' から開始するように変更
-                // 本来は uv.sw.js をルートに置くのが理想ですが、
-                // 今回はスクリプトの場所を指定しつつ登録します
+                // __uv$config が読み込まれているか安全に確認
+                const uvConfig = window.__uv$config || { prefix: '/service/' };
                 await navigator.serviceWorker.register('/uv/uv.sw.js', {
-                    scope: __uv$config.prefix // '/service/'
+                    scope: uvConfig.prefix
                 });
                 console.log("UV ServiceWorker registered");
             } catch (err) {
@@ -451,8 +450,14 @@
             const origin = btoa(url);
             proxyUrl = window.location.origin + "/prefix/" + origin;
         } else {
-            // uv.config.js の prefix: '/service/' と encodeUrl を使用
-            proxyUrl = window.location.origin + '/service/' + __uv$config.encodeUrl(url);
+            // __uv$config と encodeUrl の存在を安全にチェック
+            if (window.__uv$config && typeof window.__uv$config.encodeUrl === 'function') {
+                proxyUrl = window.location.origin + window.__uv$config.prefix + window.__uv$config.encodeUrl(url);
+            } else {
+                // フォールバック: 直接的なエンコードを試みるかエラー回避
+                console.warn("UV config not found, using fallback encoding");
+                proxyUrl = window.location.origin + '/service/' + encodeURIComponent(url);
+            }
         }
         
         const frame = $('view-' + activeTabId);
