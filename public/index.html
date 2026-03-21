@@ -452,8 +452,9 @@
             const origin = btoa(url);
             proxyUrl = window.location.origin + "/prefix/" + origin;
         } else {
-            // UV Proxy (Bare) のURL構成例
-            proxyUrl = window.location.origin + "/bare/" + encodeURIComponent(url);
+            // サーバー側の bareServer = createBareServer('/bare/') に合わせ、
+            // UVのServiceWorker設定（通常 /uv/service/）を介して通信します
+            proxyUrl = window.location.origin + "/uv/service/" + __uv$config.encodeUrl(url);
         }
         
         const frame = $('view-' + activeTabId);
