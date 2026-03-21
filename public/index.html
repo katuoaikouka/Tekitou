@@ -367,10 +367,10 @@
     /* UV Service Worker Registration */
     async function registerSW() {
         if (proxyMode === 'uv' && 'serviceWorker' in navigator) {
-            const swConfig = window.__uv$config || {};
             try {
-                await navigator.serviceWorker.register(swConfig.sw || '/uv/sw.js', {
-                    scope: swConfig.prefix || '/service/'
+                // uv.config.jsの設定に合わせて明示的にパスを指定
+                await navigator.serviceWorker.register('/uv/uv.sw.js', {
+                    scope: '/service/'
                 });
                 console.log("UV ServiceWorker registered");
             } catch (err) {
@@ -462,8 +462,8 @@
             const origin = btoa(url);
             proxyUrl = window.location.origin + "/prefix/" + origin;
         } else {
-            const swConfig = window.__uv$config || { prefix: '/service/' };
-            proxyUrl = window.location.origin + swConfig.prefix + crypts.encode(url);
+            // uv.config.js の prefix: '/service/' を使用
+            proxyUrl = window.location.origin + '/service/' + crypts.encode(url);
         }
         
         const frame = $('view-' + activeTabId);
